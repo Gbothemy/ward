@@ -1,53 +1,92 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './LeaderboardPage.css';
 
 function LeaderboardPage({ user }) {
   const [activeTab, setActiveTab] = useState('points');
+  const [leaderboardData, setLeaderboardData] = useState({
+    points: [],
+    earnings: [],
+    streak: []
+  });
+  const [currentUserRank, setCurrentUserRank] = useState({
+    points: { rank: 0, total: 0 },
+    earnings: { rank: 0, total: 0 },
+    streak: { rank: 0, total: 0 }
+  });
 
-  const leaderboardData = {
-    points: [
-      { rank: 1, username: 'CryptoKing', avatar: '👑', points: 125680, vipLevel: 8 },
-      { rank: 2, username: 'MiningMaster', avatar: '⛏️', points: 98450, vipLevel: 7 },
-      { rank: 3, username: 'RewardHunter', avatar: '🎯', points: 87320, vipLevel: 6 },
-      { rank: 4, username: 'GamePro', avatar: '🎮', points: 76540, vipLevel: 6 },
-      { rank: 5, username: 'LuckyPlayer', avatar: '🍀', points: 65890, vipLevel: 5 },
-      { rank: 6, username: 'SpeedRunner', avatar: '⚡', points: 54320, vipLevel: 5 },
-      { rank: 7, username: 'DiamondHands', avatar: '💎', points: 48760, vipLevel: 4 },
-      { rank: 8, username: 'MoonShot', avatar: '🚀', points: 42150, vipLevel: 4 },
-      { rank: 9, username: 'StarCollector', avatar: '⭐', points: 38920, vipLevel: 4 },
-      { rank: 10, username: 'EliteGamer', avatar: '🏆', points: 35480, vipLevel: 3 },
-    ],
-    earnings: [
-      { rank: 1, username: 'CryptoKing', avatar: '👑', earnings: 1250.50, currency: 'TON' },
-      { rank: 2, username: 'RewardHunter', avatar: '🎯', earnings: 980.25, currency: 'TON' },
-      { rank: 3, username: 'MiningMaster', avatar: '⛏️', earnings: 875.80, currency: 'TON' },
-      { rank: 4, username: 'DiamondHands', avatar: '💎', earnings: 765.40, currency: 'TON' },
-      { rank: 5, username: 'GamePro', avatar: '🎮', earnings: 658.90, currency: 'TON' },
-      { rank: 6, username: 'MoonShot', avatar: '🚀', earnings: 543.20, currency: 'TON' },
-      { rank: 7, username: 'LuckyPlayer', avatar: '🍀', earnings: 487.60, currency: 'TON' },
-      { rank: 8, username: 'SpeedRunner', avatar: '⚡', earnings: 421.50, currency: 'TON' },
-      { rank: 9, username: 'StarCollector', avatar: '⭐', earnings: 389.20, currency: 'TON' },
-      { rank: 10, username: 'EliteGamer', avatar: '🏆', earnings: 354.80, currency: 'TON' },
-    ],
-    streak: [
-      { rank: 1, username: 'DailyGrinder', avatar: '🔥', streak: 365, points: 45000 },
-      { rank: 2, username: 'Consistent', avatar: '📅', streak: 180, points: 32000 },
-      { rank: 3, username: 'NeverMiss', avatar: '✅', streak: 120, points: 28000 },
-      { rank: 4, username: 'CryptoKing', avatar: '👑', streak: 90, points: 125680 },
-      { rank: 5, username: 'Dedicated', avatar: '💪', streak: 75, points: 22000 },
-      { rank: 6, username: 'MiningMaster', avatar: '⛏️', streak: 60, points: 98450 },
-      { rank: 7, username: 'RewardHunter', avatar: '🎯', streak: 45, points: 87320 },
-      { rank: 8, username: 'GamePro', avatar: '🎮', streak: 30, points: 76540 },
-      { rank: 9, username: 'LuckyPlayer', avatar: '🍀', streak: 21, points: 65890 },
-      { rank: 10, username: 'SpeedRunner', avatar: '⚡', streak: 14, points: 54320 },
-    ]
-  };
+  useEffect(() => {
+    // Get all users from localStorage
+    const getAllUsers = () => {
+      const keys = Object.keys(localStorage);
+      const userKeys = keys.filter(key => key.startsWith('rewardGameUser_'));
+      
+      const users = userKeys.map(key => {
+        try {
+          const userData = JSON.parse(localStorage.getItem(key));
+          return userData;
+        } catch (e) {
+          return null;
+        }
+      }).filter(u => u !== null);
 
-  const currentUserRank = {
-    points: { rank: 156, total: 5000 },
-    earnings: { rank: 234, total: 5000 },
-    streak: { rank: 89, total: 5000 }
-  };
+      return users;
+    };
+
+    const users = getAllUsers();
+    
+    // Sort by points
+    const pointsLeaderboard = [...users]
+      .sort((a, b) => b.points - a.points)
+      .slice(0, 10)
+      .map((u, index) => ({
+        rank: index + 1,
+        username: u.username,
+        avatar: u.avatar,
+        points: u.points,
+        vipLevel: u.vipLevel
+      }));
+
+    // Sort by earnings (TON)
+    const earningsLeaderboard = [...users]
+      .sort((a, b) => (b.balance?.ton || 0) - (a.balance?.ton || 0))
+      .slice(0, 10)
+      .map((u, index) => ({
+        rank: index + 1,
+        username: u.username,
+        avatar: u.avatar,
+        earnings: u.balance?.ton || 0,
+        currency: 'TON'
+      }));
+
+    // Sort by streak
+    const streakLeaderboard = [...users]
+      .sort((a, b) => (b.dayStreak || 0) - (a.dayStreak || 0))
+      .slice(0, 10)
+      .map((u, index) => ({
+        rank: index + 1,
+        username: u.username,
+        avatar: u.avatar,
+        streak: u.dayStreak || 0,
+        points: u.points
+      }));
+
+    setLeaderboardData({
+      points: pointsLeaderboard,
+      earnings: earningsLeaderboard,
+      streak: streakLeaderboard
+    });
+
+    // Calculate current user rank
+    const pointsRank = users.sort((a, b) => b.points - a.points).findIndex(u => u.userId === user.userId) + 1;
+    const earningsRank = users.sort((a, b) => (b.balance?.ton || 0) - (a.balance?.ton || 0)).findIndex(u => u.userId === user.userId) + 1;
+    const streakRank = users.sort((a, b) => (b.dayStreak || 0) - (a.dayStreak || 0)).findIndex(u => u.userId === user.userId) + 1;
+
+    setCurrentUserRank({
+      points: { rank: pointsRank || users.length + 1, total: users.length },
+      earnings: { rank: earningsRank || users.length + 1, total: users.length },
+      streak: { rank: streakRank || users.length + 1, total: users.length }
+    });
+  }, [user.userId]);
 
   const getRankColor = (rank) => {
     if (rank === 1) return 'gold';
