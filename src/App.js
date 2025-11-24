@@ -8,6 +8,7 @@ import AirdropPage from './pages/AirdropPage';
 import ReferralPage from './pages/ReferralPage';
 import BenefitPage from './pages/BenefitPage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import ProfileEditPage from './pages/ProfileEditPage';
 import './App.css';
 
 function App() {
@@ -17,23 +18,24 @@ function App() {
     username: 'Player123',
     userId: 'USR-98765',
     avatar: '👤',
+    email: '',
     balance: {
-      ton: 125.50,
-      cati: 3420,
-      usdt: 89.25
+      ton: 0,
+      cati: 0,
+      usdt: 0
     },
-    points: 15680,
-    vipLevel: 3,
-    exp: 2450,
-    maxExp: 5000,
-    giftPoints: 890,
-    completedTasks: 24,
-    dayStreak: 7,
+    points: 0,
+    vipLevel: 1,
+    exp: 0,
+    maxExp: 1000,
+    giftPoints: 0,
+    completedTasks: 0,
+    dayStreak: 0,
     lastClaim: null,
     totalEarnings: {
-      ton: 125.50,
-      cati: 3420,
-      usdt: 89.25
+      ton: 0,
+      cati: 0,
+      usdt: 0
     }
   });
 
@@ -45,9 +47,11 @@ function App() {
     // Landing page should always be accessible
   }, []);
 
-  // Save user data to localStorage whenever it changes
+  // Save user data to localStorage whenever it changes (per user)
   useEffect(() => {
-    localStorage.setItem('rewardGameUser', JSON.stringify(user));
+    if (user.userId) {
+      localStorage.setItem(`rewardGameUser_${user.userId}`, JSON.stringify(user));
+    }
   }, [user]);
 
   const addNotification = (message, type = 'success') => {
@@ -66,26 +70,38 @@ function App() {
     setAuthUser(userData);
     setIsAuthenticated(true);
     
-    // Load saved game data if exists
-    const savedUser = localStorage.getItem('rewardGameUser');
+    // Load saved game data if exists, otherwise start fresh
+    const savedUser = localStorage.getItem(`rewardGameUser_${userData.userId}`);
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
       setUser({
         ...parsedUser,
         username: userData.username,
         userId: userData.userId,
-        avatar: userData.avatar
+        avatar: userData.avatar,
+        email: userData.email
       });
+      addNotification(`Welcome back, ${userData.username}!`, 'success');
     } else {
-      setUser(prev => ({
-        ...prev,
+      // New user - start from zero
+      setUser({
         username: userData.username,
         userId: userData.userId,
-        avatar: userData.avatar
-      }));
+        avatar: userData.avatar,
+        email: userData.email || '',
+        balance: { ton: 0, cati: 0, usdt: 0 },
+        points: 0,
+        vipLevel: 1,
+        exp: 0,
+        maxExp: 1000,
+        giftPoints: 0,
+        completedTasks: 0,
+        dayStreak: 0,
+        lastClaim: null,
+        totalEarnings: { ton: 0, cati: 0, usdt: 0 }
+      });
+      addNotification(`Welcome to Reward Game, ${userData.username}!`, 'success');
     }
-    
-    addNotification(`Welcome back, ${userData.username}!`, 'success');
   };
 
   const handleLogout = () => {
@@ -112,6 +128,7 @@ function App() {
             <Route path="/referral" element={<ReferralPage user={user} updateUser={updateUser} addNotification={addNotification} />} />
             <Route path="/benefit" element={<BenefitPage user={user} updateUser={updateUser} addNotification={addNotification} onLogout={handleLogout} />} />
             <Route path="/leaderboard" element={<LeaderboardPage user={user} />} />
+            <Route path="/profile/edit" element={<ProfileEditPage user={user} updateUser={updateUser} addNotification={addNotification} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Layout>

@@ -128,6 +128,10 @@ function BenefitPage({ user, updateUser, addNotification, onLogout }) {
           </div>
         </div>
 
+        <button onClick={() => navigate('/profile/edit')} className="profile-edit-btn">
+          ✏️ Edit Profile
+        </button>
+
         <button onClick={handleLogout} className="profile-logout-btn">
           🚪 Logout
         </button>
