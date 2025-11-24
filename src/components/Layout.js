@@ -125,18 +125,39 @@ function Layout({ children, user, notifications = [], onLogout }) {
                 </div>
               </div>
               <nav className="menu-nav">
-                <Link to="/" onClick={() => setMenuOpen(false)}>🎮 Game Mining</Link>
-                <Link to="/airdrop" onClick={() => setMenuOpen(false)}>🎁 Airdrop</Link>
-                <Link to="/referral" onClick={() => setMenuOpen(false)}>💰 Referral</Link>
-                <Link to="/leaderboard" onClick={() => setMenuOpen(false)}>🏆 Leaderboard</Link>
-                <Link to="/conversion" onClick={() => setMenuOpen(false)}>🔄 Convert & Withdraw</Link>
-                <div className="nav-divider"></div>
-                <Link to="/benefit" onClick={() => setMenuOpen(false)}>👤 Profile & Benefits</Link>
+                {/* Account Section */}
+                <div className="menu-section-title">👤 Account</div>
+                <Link to="/benefit" onClick={() => setMenuOpen(false)}>Profile</Link>
                 <Link to="/admin" onClick={() => setMenuOpen(false)}>🛡️ Admin Panel</Link>
-                <div className="nav-divider"></div>
                 <button onClick={() => { onLogout(); setMenuOpen(false); }} className="menu-logout-btn">
                   🚪 Logout
                 </button>
+                
+                <div className="nav-divider"></div>
+                
+                {/* Earnings & Mining Section */}
+                <div className="menu-section-title">💰 Earnings & Mining</div>
+                <Link to="/" onClick={() => setMenuOpen(false)}>🎮 Game Mining</Link>
+                
+                <div className="nav-divider"></div>
+                
+                {/* Rewards & Bonuses Section */}
+                <div className="menu-section-title">🎁 Rewards & Bonuses</div>
+                <Link to="/airdrop" onClick={() => setMenuOpen(false)}>Airdrop</Link>
+                <Link to="/referral" onClick={() => setMenuOpen(false)}>Referral</Link>
+                <Link to="/benefit" onClick={() => setMenuOpen(false)}>Benefits</Link>
+                
+                <div className="nav-divider"></div>
+                
+                {/* Finance Section */}
+                <div className="menu-section-title">💳 Finance</div>
+                <Link to="/conversion" onClick={() => setMenuOpen(false)}>Convert & Withdraw</Link>
+                
+                <div className="nav-divider"></div>
+                
+                {/* Community Section */}
+                <div className="menu-section-title">🏆 Community</div>
+                <Link to="/leaderboard" onClick={() => setMenuOpen(false)}>Leaderboard</Link>
               </nav>
             </div>
           </div>
