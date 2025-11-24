@@ -270,6 +270,17 @@
   font-size: 14px;
 }
 
+.storage-info strong {
+  color: #333;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 16px;
+}
+
 .edit-modal {
   position: fixed;
   top: 0;
