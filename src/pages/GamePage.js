@@ -138,7 +138,7 @@ function GamePage({ user, updateUser, addNotification }) {
 
       <h3 className="section-title">Mining Modes</h3>
       <div className="mining-grid">
-        {miningModes.map(mode => {
+        {miningModes && miningModes.length > 0 ? miningModes.map(mode => {
           const cooldownTime = getCooldownTime(mode.id);
           const isOnCooldown = cooldownTime !== null;
           const isMining = mining[mode.id];
@@ -170,7 +170,7 @@ function GamePage({ user, updateUser, addNotification }) {
               )}
             </div>
           );
-        })}
+        }) : <div style={{padding: '40px', textAlign: 'center', color: '#999'}}>Loading mining modes...</div>}
       </div>
 
       <Achievements user={user} />
