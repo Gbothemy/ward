@@ -21,6 +21,7 @@ function App() {
     userId: 'USR-98765',
     avatar: '👤',
     email: '',
+    isAdmin: false,
     balance: {
       ton: 0,
       cati: 0,
@@ -108,11 +109,15 @@ function App() {
       addNotification(`Welcome back, ${userData.username}!`, 'success');
     } else {
       // New user - start from zero
+      // Check if user is admin (userId starts with ADMIN- or email ends with @admin.com)
+      const isAdmin = userData.userId?.startsWith('ADMIN-') || userData.email?.endsWith('@admin.com');
+      
       setUser({
         username: userData.username,
         userId: userData.userId,
         avatar: userData.avatar,
         email: userData.email || '',
+        isAdmin: isAdmin,
         balance: { ton: 0, cati: 0, usdt: 0 },
         points: 0,
         vipLevel: 1,

@@ -128,7 +128,9 @@ function Layout({ children, user, notifications = [], onLogout }) {
                 {/* Account Section */}
                 <div className="menu-section-title">👤 Account</div>
                 <Link to="/benefit" onClick={() => setMenuOpen(false)}>Profile</Link>
-                <Link to="/admin" onClick={() => setMenuOpen(false)}>🛡️ Admin Panel</Link>
+                {user.isAdmin && (
+                  <Link to="/admin" onClick={() => setMenuOpen(false)}>🛡️ Admin Panel</Link>
+                )}
                 <button onClick={() => { onLogout(); setMenuOpen(false); }} className="menu-logout-btn">
                   🚪 Logout
                 </button>
