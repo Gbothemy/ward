@@ -128,17 +128,12 @@ function Layout({ children, user, notifications = [], onLogout }) {
                 <Link to="/" onClick={() => setMenuOpen(false)}>🎮 Game Mining</Link>
                 <Link to="/airdrop" onClick={() => setMenuOpen(false)}>🎁 Airdrop</Link>
                 <Link to="/referral" onClick={() => setMenuOpen(false)}>💰 Referral</Link>
-                <Link to="/benefit" onClick={() => setMenuOpen(false)}>👤 Benefit</Link>
+                <Link to="/leaderboard" onClick={() => setMenuOpen(false)}>🏆 Leaderboard</Link>
                 <Link to="/conversion" onClick={() => setMenuOpen(false)}>🔄 Convert & Withdraw</Link>
                 <div className="nav-divider"></div>
-                <Link to="/" onClick={() => setMenuOpen(false)}>🧩 Puzzle Mining</Link>
-                <Link to="/" onClick={() => setMenuOpen(false)}>📹 Video Mining</Link>
-                <Link to="/" onClick={() => setMenuOpen(false)}>🎯 Mini-Game Mining</Link>
-                <Link to="/" onClick={() => setMenuOpen(false)}>🎰 Spin Mining</Link>
-                <div className="nav-divider"></div>
-                <Link to="/leaderboard" onClick={() => setMenuOpen(false)}>🏆 Leaderboard</Link>
+                <Link to="/benefit" onClick={() => setMenuOpen(false)}>👤 Profile & Benefits</Link>
                 <Link to="/admin" onClick={() => setMenuOpen(false)}>🛡️ Admin Panel</Link>
-                <Link to="/" onClick={() => setMenuOpen(false)}>⚙️ Settings</Link>
+                <div className="nav-divider"></div>
                 <button onClick={() => { onLogout(); setMenuOpen(false); }} className="menu-logout-btn">
                   🚪 Logout
                 </button>
