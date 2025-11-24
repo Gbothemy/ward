@@ -11,6 +11,11 @@ function AdminPage({ user, addNotification }) {
   const [editForm, setEditForm] = useState({});
   const [notifications, setNotifications] = useState([]);
   const [withdrawalRequests, setWithdrawalRequests] = useState([]);
+  const [leaderboardData, setLeaderboardData] = useState({
+    points: [],
+    earnings: [],
+    streak: []
+  });
   const [systemSettings, setSystemSettings] = useState({
     maintenanceMode: false,
     registrationEnabled: true,
@@ -27,6 +32,7 @@ function AdminPage({ user, addNotification }) {
     loadAllData();
     loadNotifications();
     loadWithdrawalRequests();
+    loadLeaderboard();
     loadSystemSettings();
 
     // Auto-refresh data every 5 seconds for live updates
@@ -34,6 +40,7 @@ function AdminPage({ user, addNotification }) {
       loadAllData();
       loadNotifications();
       loadWithdrawalRequests();
+      loadLeaderboard();
     }, 5000);
 
     return () => clearInterval(interval);
@@ -119,6 +126,73 @@ function AdminPage({ user, addNotification }) {
       setWithdrawalRequests(sortedRequests);
     } catch (e) {
       setWithdrawalRequests([]);
+    }
+  };
+
+  const loadLeaderboard = () => {
+    try {
+      const keys = Object.keys(localStorage);
+      const userKeys = keys.filter(key => key.startsWith('rewardGameUser_'));
+      
+      const allUsers = userKeys.map(key => {
+        try {
+          return JSON.parse(localStorage.getItem(key));
+        } catch (e) {
+          return null;
+        }
+      }).filter(u => u !== null);
+
+      // Filter out admin and demo users
+      const realUsers = allUsers.filter(u => 
+        !u.userId?.startsWith('ADMIN-') && 
+        !u.userId?.startsWith('USR-98765') &&
+        !u.username?.toLowerCase().includes('demo') &&
+        !u.username?.toLowerCase().includes('admin')
+      );
+      
+      // Sort by points
+      const pointsLeaderboard = [...realUsers]
+        .sort((a, b) => b.points - a.points)
+        .slice(0, 10)
+        .map((u, index) => ({
+          rank: index + 1,
+          username: u.username,
+          avatar: u.avatar,
+          points: u.points,
+          vipLevel: u.vipLevel
+        }));
+
+      // Sort by earnings (TON)
+      const earningsLeaderboard = [...realUsers]
+        .sort((a, b) => (b.balance?.ton || 0) - (a.balance?.ton || 0))
+        .slice(0, 10)
+        .map((u, index) => ({
+          rank: index + 1,
+          username: u.username,
+          avatar: u.avatar,
+          earnings: u.balance?.ton || 0,
+          currency: 'TON'
+        }));
+
+      // Sort by streak
+      const streakLeaderboard = [...realUsers]
+        .sort((a, b) => (b.dayStreak || 0) - (a.dayStreak || 0))
+        .slice(0, 10)
+        .map((u, index) => ({
+          rank: index + 1,
+          username: u.username,
+          avatar: u.avatar,
+          streak: u.dayStreak || 0,
+          points: u.points
+        }));
+
+      setLeaderboardData({
+        points: pointsLeaderboard,
+        earnings: earningsLeaderboard,
+        streak: streakLeaderboard
+      });
+    } catch (error) {
+      console.error('Error loading leaderboard:', error);
     }
   };
 
@@ -361,6 +435,9 @@ function AdminPage({ user, addNotification }) {
         <button className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>
           👥 Users ({users.length})
         </button>
+        <button className={activeTab === 'leaderboard' ? 'active' : ''} onClick={() => setActiveTab('leaderboard')}>
+          🏆 Leaderboard
+        </button>
         <button className={activeTab === 'withdrawals' ? 'active' : ''} onClick={() => setActiveTab('withdrawals')}>
           💰 Withdrawals ({withdrawalRequests.filter(r => r.status === 'pending').length})
         </button>
@@ -482,6 +559,79 @@ function AdminPage({ user, addNotification }) {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'leaderboard' && (
+        <div className="admin-content">
+          <div className="leaderboard-section">
+            <h3>🏆 Top Players Leaderboard</h3>
+            
+            <div className="leaderboard-categories">
+              <div className="leaderboard-category">
+                <h4>💎 Top Points</h4>
+                <div className="leaderboard-list">
+                  {leaderboardData.points.length === 0 ? (
+                    <p className="empty-state">No players yet</p>
+                  ) : (
+                    leaderboardData.points.map((player) => (
+                      <div key={player.rank} className={`leaderboard-item rank-${player.rank}`}>
+                        <span className="rank-badge">{player.rank}</span>
+                        <span className="player-avatar">{player.avatar}</span>
+                        <div className="player-info">
+                          <strong>{player.username}</strong>
+                          <small>{player.points.toLocaleString()} pts • VIP {player.vipLevel}</small>
+                        </div>
+                        {player.rank <= 3 && <span className="trophy">{player.rank === 1 ? '🥇' : player.rank === 2 ? '🥈' : '🥉'}</span>}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="leaderboard-category">
+                <h4>💰 Top Earnings</h4>
+                <div className="leaderboard-list">
+                  {leaderboardData.earnings.length === 0 ? (
+                    <p className="empty-state">No earnings yet</p>
+                  ) : (
+                    leaderboardData.earnings.map((player) => (
+                      <div key={player.rank} className={`leaderboard-item rank-${player.rank}`}>
+                        <span className="rank-badge">{player.rank}</span>
+                        <span className="player-avatar">{player.avatar}</span>
+                        <div className="player-info">
+                          <strong>{player.username}</strong>
+                          <small>{player.earnings.toFixed(2)} {player.currency}</small>
+                        </div>
+                        {player.rank <= 3 && <span className="trophy">{player.rank === 1 ? '🥇' : player.rank === 2 ? '🥈' : '🥉'}</span>}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="leaderboard-category">
+                <h4>🔥 Top Streaks</h4>
+                <div className="leaderboard-list">
+                  {leaderboardData.streak.length === 0 ? (
+                    <p className="empty-state">No streaks yet</p>
+                  ) : (
+                    leaderboardData.streak.map((player) => (
+                      <div key={player.rank} className={`leaderboard-item rank-${player.rank}`}>
+                        <span className="rank-badge">{player.rank}</span>
+                        <span className="player-avatar">{player.avatar}</span>
+                        <div className="player-info">
+                          <strong>{player.username}</strong>
+                          <small>{player.streak} days • {player.points.toLocaleString()} pts</small>
+                        </div>
+                        {player.rank <= 3 && <span className="trophy">{player.rank === 1 ? '🥇' : player.rank === 2 ? '🥈' : '🥉'}</span>}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

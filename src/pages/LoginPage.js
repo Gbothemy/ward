@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 
 function LoginPage({ onLogin }) {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     username: '',
@@ -71,7 +73,7 @@ function LoginPage({ onLogin }) {
     // Save to localStorage
     localStorage.setItem('authUser', JSON.stringify(userData));
     
-    onLogin(userData);
+    onLogin(userData, navigate);
   };
 
   const handleDemoLogin = () => {
@@ -84,7 +86,7 @@ function LoginPage({ onLogin }) {
     };
     
     localStorage.setItem('authUser', JSON.stringify(demoUser));
-    onLogin(demoUser);
+    onLogin(demoUser, navigate);
   };
 
   return (

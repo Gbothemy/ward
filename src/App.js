@@ -91,9 +91,12 @@ function App() {
     setUser(prev => ({ ...prev, ...updates }));
   };
 
-  const handleLogin = (userData) => {
+  const handleLogin = (userData, navigate) => {
     setAuthUser(userData);
     setIsAuthenticated(true);
+    
+    // Check if user is admin
+    const isAdmin = userData.userId?.startsWith('ADMIN-') || userData.email?.endsWith('@admin.com');
     
     // Load saved game data if exists, otherwise start fresh
     const savedUser = localStorage.getItem(`rewardGameUser_${userData.userId}`);
@@ -104,14 +107,12 @@ function App() {
         username: userData.username,
         userId: userData.userId,
         avatar: userData.avatar,
-        email: userData.email
+        email: userData.email,
+        isAdmin: isAdmin
       });
       addNotification(`Welcome back, ${userData.username}!`, 'success');
     } else {
       // New user - start from zero
-      // Check if user is admin (userId starts with ADMIN- or email ends with @admin.com)
-      const isAdmin = userData.userId?.startsWith('ADMIN-') || userData.email?.endsWith('@admin.com');
-      
       setUser({
         username: userData.username,
         userId: userData.userId,
@@ -130,6 +131,15 @@ function App() {
         totalEarnings: { ton: 0, cati: 0, usdt: 0 }
       });
       addNotification(`Welcome to Reward Game, ${userData.username}!`, 'success');
+    }
+    
+    // Redirect admins to admin panel, regular users to game page
+    if (navigate) {
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/game');
+      }
     }
   };
 
