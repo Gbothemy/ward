@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import soundManager from '../utils/soundManager';
 import './Layout.css';
 
-function Layout({ children, user, notifications = [], onLogout, darkMode, toggleDarkMode }) {
+function Layout({ children, user, notifications = [], onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
   const location = useLocation();
@@ -36,9 +36,6 @@ function Layout({ children, user, notifications = [], onLogout, darkMode, toggle
           <div className="header-right">
             <button onClick={toggleSound} className="sound-toggle" title={soundEnabled ? 'Sound On' : 'Sound Off'}>
               {soundEnabled ? '🔊' : '🔇'}
-            </button>
-            <button onClick={toggleDarkMode} className="dark-mode-toggle" title={darkMode ? 'Light Mode' : 'Dark Mode'}>
-              {darkMode ? '☀️' : '🌙'}
             </button>
             <div className="user-info">
               <div className="user-details">
