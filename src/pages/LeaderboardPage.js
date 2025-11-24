@@ -34,8 +34,16 @@ function LeaderboardPage({ user }) {
 
     const users = getAllUsers();
     
+    // Filter out admin and demo users
+    const realUsers = users.filter(u => 
+      !u.userId?.startsWith('ADMIN-') && 
+      !u.userId?.startsWith('USR-98765') && 
+      !u.username?.toLowerCase().includes('demo') &&
+      !u.username?.toLowerCase().includes('admin')
+    );
+    
     // Sort by points
-    const pointsLeaderboard = [...users]
+    const pointsLeaderboard = [...realUsers]
       .sort((a, b) => b.points - a.points)
       .slice(0, 10)
       .map((u, index) => ({
@@ -47,7 +55,7 @@ function LeaderboardPage({ user }) {
       }));
 
     // Sort by earnings (TON)
-    const earningsLeaderboard = [...users]
+    const earningsLeaderboard = [...realUsers]
       .sort((a, b) => (b.balance?.ton || 0) - (a.balance?.ton || 0))
       .slice(0, 10)
       .map((u, index) => ({
@@ -59,7 +67,7 @@ function LeaderboardPage({ user }) {
       }));
 
     // Sort by streak
-    const streakLeaderboard = [...users]
+    const streakLeaderboard = [...realUsers]
       .sort((a, b) => (b.dayStreak || 0) - (a.dayStreak || 0))
       .slice(0, 10)
       .map((u, index) => ({
@@ -76,15 +84,15 @@ function LeaderboardPage({ user }) {
       streak: streakLeaderboard
     });
 
-    // Calculate current user rank
-    const pointsRank = users.sort((a, b) => b.points - a.points).findIndex(u => u.userId === user.userId) + 1;
-    const earningsRank = users.sort((a, b) => (b.balance?.ton || 0) - (a.balance?.ton || 0)).findIndex(u => u.userId === user.userId) + 1;
-    const streakRank = users.sort((a, b) => (b.dayStreak || 0) - (a.dayStreak || 0)).findIndex(u => u.userId === user.userId) + 1;
+    // Calculate current user rank (using realUsers)
+    const pointsRank = realUsers.sort((a, b) => b.points - a.points).findIndex(u => u.userId === user.userId) + 1;
+    const earningsRank = realUsers.sort((a, b) => (b.balance?.ton || 0) - (a.balance?.ton || 0)).findIndex(u => u.userId === user.userId) + 1;
+    const streakRank = realUsers.sort((a, b) => (b.dayStreak || 0) - (a.dayStreak || 0)).findIndex(u => u.userId === user.userId) + 1;
 
     setCurrentUserRank({
-      points: { rank: pointsRank || users.length + 1, total: users.length },
-      earnings: { rank: earningsRank || users.length + 1, total: users.length },
-      streak: { rank: streakRank || users.length + 1, total: users.length }
+      points: { rank: pointsRank || realUsers.length + 1, total: realUsers.length },
+      earnings: { rank: earningsRank || realUsers.length + 1, total: realUsers.length },
+      streak: { rank: streakRank || realUsers.length + 1, total: realUsers.length }
     });
   }, [user.userId]);
 

@@ -10,6 +10,7 @@ function AdminPage({ user, addNotification }) {
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({});
   const [notifications, setNotifications] = useState([]);
+  const [withdrawalRequests, setWithdrawalRequests] = useState([]);
   const [systemSettings, setSystemSettings] = useState({
     maintenanceMode: false,
     registrationEnabled: true,
@@ -25,12 +26,14 @@ function AdminPage({ user, addNotification }) {
   useEffect(() => {
     loadAllData();
     loadNotifications();
+    loadWithdrawalRequests();
     loadSystemSettings();
 
     // Auto-refresh data every 5 seconds for live updates
     const interval = setInterval(() => {
       loadAllData();
       loadNotifications();
+      loadWithdrawalRequests();
     }, 5000);
 
     return () => clearInterval(interval);
@@ -103,6 +106,82 @@ function AdminPage({ user, addNotification }) {
       } catch (e) {
         setNotifications([]);
       }
+    }
+  };
+
+  const loadWithdrawalRequests = () => {
+    try {
+      const requests = JSON.parse(localStorage.getItem('withdrawalRequests') || '[]');
+      // Sort by date, newest first
+      const sortedRequests = requests.sort((a, b) => 
+        new Date(b.requestDate) - new Date(a.requestDate)
+      );
+      setWithdrawalRequests(sortedRequests);
+    } catch (e) {
+      setWithdrawalRequests([]);
+    }
+  };
+
+  const handleWithdrawalAction = (requestId, action) => {
+    try {
+      const requests = JSON.parse(localStorage.getItem('withdrawalRequests') || '[]');
+      const requestIndex = requests.findIndex(req => req.id === requestId);
+      
+      if (requestIndex === -1) {
+        addNotification('Withdrawal request not found', 'error');
+        return;
+      }
+
+      const request = requests[requestIndex];
+      
+      if (action === 'approved') {
+        // Deduct balance from user
+        const userKey = `rewardGameUser_${request.userId}`;
+        const userData = JSON.parse(localStorage.getItem(userKey));
+        
+        if (userData) {
+          const currency = request.currency.toLowerCase();
+          if (userData.balance[currency] >= request.amount) {
+            userData.balance[currency] -= request.amount;
+            localStorage.setItem(userKey, JSON.stringify(userData));
+            
+            // Update request status
+            requests[requestIndex].status = 'approved';
+            requests[requestIndex].processedDate = new Date().toISOString();
+            requests[requestIndex].processedBy = user.username;
+            
+            addNotification(`Withdrawal approved: ${request.amount} ${request.currency}`, 'success');
+          } else {
+            addNotification('Insufficient user balance', 'error');
+            return;
+          }
+        } else {
+          addNotification('User not found', 'error');
+          return;
+        }
+      } else if (action === 'rejected') {
+        // Just update status, don't deduct balance
+        requests[requestIndex].status = 'rejected';
+        requests[requestIndex].processedDate = new Date().toISOString();
+        requests[requestIndex].processedBy = user.username;
+        requests[requestIndex].rejectionReason = 'Rejected by admin';
+        
+        addNotification(`Withdrawal rejected: ${request.amount} ${request.currency}`, 'info');
+      }
+      
+      localStorage.setItem('withdrawalRequests', JSON.stringify(requests));
+      
+      // Remove from admin notifications
+      const adminNotifs = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
+      const updatedNotifs = adminNotifs.filter(notif => notif.id !== requestId);
+      localStorage.setItem('adminNotifications', JSON.stringify(updatedNotifs));
+      
+      loadWithdrawalRequests();
+      loadNotifications();
+      loadAllData();
+    } catch (error) {
+      console.error('Error processing withdrawal:', error);
+      addNotification('Error processing withdrawal', 'error');
     }
   };
 
@@ -282,6 +361,9 @@ function AdminPage({ user, addNotification }) {
         <button className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>
           👥 Users ({users.length})
         </button>
+        <button className={activeTab === 'withdrawals' ? 'active' : ''} onClick={() => setActiveTab('withdrawals')}>
+          💰 Withdrawals ({withdrawalRequests.filter(r => r.status === 'pending').length})
+        </button>
         <button className={activeTab === 'notifications' ? 'active' : ''} onClick={() => setActiveTab('notifications')}>
           🔔 Notifications ({notifications.length})
         </button>
@@ -400,6 +482,103 @@ function AdminPage({ user, addNotification }) {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'withdrawals' && (
+        <div className="admin-content">
+          <div className="withdrawals-section">
+            <div className="section-header">
+              <h3>💰 Withdrawal Requests</h3>
+              <div className="filter-tabs">
+                <button className="filter-btn active">All ({withdrawalRequests.length})</button>
+                <button className="filter-btn">Pending ({withdrawalRequests.filter(r => r.status === 'pending').length})</button>
+                <button className="filter-btn">Approved ({withdrawalRequests.filter(r => r.status === 'approved').length})</button>
+                <button className="filter-btn">Rejected ({withdrawalRequests.filter(r => r.status === 'rejected').length})</button>
+              </div>
+            </div>
+
+            {withdrawalRequests.length === 0 ? (
+              <div className="empty-state">
+                <p>No withdrawal requests yet</p>
+              </div>
+            ) : (
+              <div className="withdrawals-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Request ID</th>
+                      <th>User</th>
+                      <th>Amount</th>
+                      <th>Currency</th>
+                      <th>Wallet Address</th>
+                      <th>Status</th>
+                      <th>Request Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {withdrawalRequests.map((request) => (
+                      <tr key={request.id} className={`status-${request.status}`}>
+                        <td className="request-id">{request.id}</td>
+                        <td>
+                          <div className="user-cell">
+                            <strong>{request.username}</strong>
+                            <small>{request.userId}</small>
+                          </div>
+                        </td>
+                        <td className="amount-cell">{request.amount.toFixed(2)}</td>
+                        <td>
+                          <span className="currency-badge">{request.currency}</span>
+                        </td>
+                        <td className="wallet-cell">
+                          <code>{request.walletAddress}</code>
+                        </td>
+                        <td>
+                          <span className={`status-badge status-${request.status}`}>
+                            {request.status === 'pending' && '⏳ Pending'}
+                            {request.status === 'approved' && '✅ Approved'}
+                            {request.status === 'rejected' && '❌ Rejected'}
+                          </span>
+                        </td>
+                        <td className="date-cell">
+                          {new Date(request.requestDate).toLocaleString()}
+                        </td>
+                        <td className="actions-cell">
+                          {request.status === 'pending' ? (
+                            <div className="action-buttons">
+                              <button 
+                                onClick={() => handleWithdrawalAction(request.id, 'approved')}
+                                className="approve-btn"
+                                title="Approve withdrawal"
+                              >
+                                ✅ Approve
+                              </button>
+                              <button 
+                                onClick={() => handleWithdrawalAction(request.id, 'rejected')}
+                                className="reject-btn"
+                                title="Reject withdrawal"
+                              >
+                                ❌ Reject
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="processed-info">
+                              <small>
+                                {request.processedBy && `By: ${request.processedBy}`}
+                                <br />
+                                {request.processedDate && new Date(request.processedDate).toLocaleString()}
+                              </small>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
