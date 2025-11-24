@@ -26,6 +26,14 @@ function AdminPage({ user, addNotification }) {
     loadAllData();
     loadNotifications();
     loadSystemSettings();
+
+    // Auto-refresh data every 5 seconds for live updates
+    const interval = setInterval(() => {
+      loadAllData();
+      loadNotifications();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const loadAllData = () => {
@@ -41,19 +49,27 @@ function AdminPage({ user, addNotification }) {
         }
       }).filter(u => u !== null);
 
-      setUsers(allUsers);
+      // Filter out admin and demo users from statistics
+      const realUsers = allUsers.filter(u => 
+        !u.userId?.startsWith('ADMIN-') && 
+        !u.userId?.startsWith('USR-98765') && // DemoPlayer
+        !u.username?.toLowerCase().includes('demo') &&
+        !u.username?.toLowerCase().includes('admin')
+      );
 
-      // Calculate comprehensive stats
-      const totalPoints = allUsers.reduce((sum, u) => sum + (u.points || 0), 0);
-      const totalTasks = allUsers.reduce((sum, u) => sum + (u.completedTasks || 0), 0);
-      const totalTON = allUsers.reduce((sum, u) => sum + (u.balance?.ton || 0), 0);
-      const totalCATI = allUsers.reduce((sum, u) => sum + (u.balance?.cati || 0), 0);
-      const avgLevel = allUsers.length > 0 
-        ? (allUsers.reduce((sum, u) => sum + (u.vipLevel || 1), 0) / allUsers.length).toFixed(1)
+      setUsers(realUsers);
+
+      // Calculate comprehensive stats (using realUsers only)
+      const totalPoints = realUsers.reduce((sum, u) => sum + (u.points || 0), 0);
+      const totalTasks = realUsers.reduce((sum, u) => sum + (u.completedTasks || 0), 0);
+      const totalTON = realUsers.reduce((sum, u) => sum + (u.balance?.ton || 0), 0);
+      const totalCATI = realUsers.reduce((sum, u) => sum + (u.balance?.cati || 0), 0);
+      const avgLevel = realUsers.length > 0 
+        ? (realUsers.reduce((sum, u) => sum + (u.vipLevel || 1), 0) / realUsers.length).toFixed(1)
         : 0;
 
       const today = new Date().toDateString();
-      const activeToday = allUsers.filter(u => {
+      const activeToday = realUsers.filter(u => {
         try {
           return localStorage.getItem(`dailyPlays_${u.userId}_${today}`) !== null;
         } catch (e) {
@@ -62,14 +78,15 @@ function AdminPage({ user, addNotification }) {
       }).length;
 
       setStats({
-        totalUsers: allUsers.length,
+        totalUsers: realUsers.length,
         totalPoints,
         totalTasks,
         avgLevel,
         activeToday,
         totalTON: totalTON.toFixed(2),
         totalCATI: totalCATI.toFixed(2),
-        topPlayer: allUsers.sort((a, b) => b.points - a.points)[0]
+        topPlayer: realUsers.sort((a, b) => b.points - a.points)[0],
+        lastUpdate: new Date().toLocaleTimeString()
       });
     } catch (error) {
       console.error('Error loading data:', error);
@@ -247,8 +264,15 @@ function AdminPage({ user, addNotification }) {
   return (
     <div className="admin-page">
       <div className="admin-header">
-        <h1>🛡️ Admin Dashboard</h1>
-        <p>Complete system management and control</p>
+        <div>
+          <h1>🛡️ Admin Dashboard</h1>
+          <p>Complete system management and control</p>
+        </div>
+        <div className="live-indicator">
+          <span className="live-dot"></span>
+          <span>Live Updates</span>
+          {stats.lastUpdate && <small>Last: {stats.lastUpdate}</small>}
+        </div>
       </div>
 
       <div className="admin-tabs">

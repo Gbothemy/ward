@@ -178,8 +178,8 @@ function Layout({ children, user, notifications = [], onLogout }) {
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="bottom-nav mobile-only">
+      {/* Bottom Navigation - All Screens */}
+      <nav className="bottom-nav">
         <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
           <span className="nav-icon">🎮</span>
           <span className="nav-label">MINING</span>

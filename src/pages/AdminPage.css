@@ -4,7 +4,9 @@
 
 .admin-header {
   margin-bottom: 30px;
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .admin-header h1 {
@@ -17,6 +19,47 @@
 .admin-header p {
   color: #666;
   font-size: 16px;
+}
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: 2px solid #4CAF50;
+}
+
+.live-dot {
+  width: 10px;
+  height: 10px;
+  background: #4CAF50;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.live-indicator span {
+  color: #4CAF50;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.live-indicator small {
+  color: #999;
+  font-size: 11px;
+  margin-left: 5px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
 }
 
 .admin-tabs {
