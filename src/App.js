@@ -10,6 +10,7 @@ import BenefitPage from './pages/BenefitPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ProfileEditPage from './pages/ProfileEditPage';
 import ConversionPage from './pages/ConversionPage';
+import AdminPage from './pages/AdminPage';
 import './App.css';
 
 function App() {
@@ -175,6 +176,7 @@ function App() {
             <Route path="/leaderboard" element={<LeaderboardPage user={user} />} />
             <Route path="/profile/edit" element={<ProfileEditPage user={user} updateUser={updateUser} addNotification={addNotification} />} />
             <Route path="/conversion" element={<ConversionPage user={user} updateUser={updateUser} addNotification={addNotification} />} />
+            <Route path="/admin" element={<AdminPage user={user} updateUser={updateUser} addNotification={addNotification} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Layout>

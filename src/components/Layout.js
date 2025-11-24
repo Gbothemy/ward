@@ -140,6 +140,7 @@ function Layout({ children, user, notifications = [], onLogout, darkMode, toggle
                 <Link to="/" onClick={() => setMenuOpen(false)}>🎰 Spin Mining</Link>
                 <div className="nav-divider"></div>
                 <Link to="/leaderboard" onClick={() => setMenuOpen(false)}>🏆 Leaderboard</Link>
+                <Link to="/admin" onClick={() => setMenuOpen(false)}>🛡️ Admin Panel</Link>
                 <Link to="/" onClick={() => setMenuOpen(false)}>⚙️ Settings</Link>
                 <button onClick={() => { onLogout(); setMenuOpen(false); }} className="menu-logout-btn">
                   🚪 Logout
