@@ -226,7 +226,7 @@ body.dark-mode .bottom-nav a.active {
 
 .mining-card {
   animation: bounceIn 0.6s ease forwards;
-  opacity: 0;
+  opacity: 1;
 }
 
 .mining-card:nth-child(1) {
