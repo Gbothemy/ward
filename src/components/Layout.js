@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import soundManager from '../utils/soundManager';
 import './Layout.css';
 
-function Layout({ children, user, notifications = [], onLogout }) {
+function Layout({ children, user, notifications = [], onLogout, darkMode, toggleDarkMode }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
   const location = useLocation();
+
+  const toggleSound = () => {
+    const newState = soundManager.toggle();
+    setSoundEnabled(newState);
+    soundManager.play('click');
+  };
 
   return (
     <div className="app-container">
@@ -26,6 +34,12 @@ function Layout({ children, user, notifications = [], onLogout }) {
             <h1 className="header-title">🎮 Reward Game Dashboard</h1>
           </div>
           <div className="header-right">
+            <button onClick={toggleSound} className="sound-toggle" title={soundEnabled ? 'Sound On' : 'Sound Off'}>
+              {soundEnabled ? '🔊' : '🔇'}
+            </button>
+            <button onClick={toggleDarkMode} className="dark-mode-toggle" title={darkMode ? 'Light Mode' : 'Dark Mode'}>
+              {darkMode ? '☀️' : '🌙'}
+            </button>
             <div className="user-info">
               <div className="user-details">
                 <span className="user-name">{user.username}</span>
@@ -38,8 +52,8 @@ function Layout({ children, user, notifications = [], onLogout }) {
       </header>
 
       <div className="layout-wrapper">
-        {/* Desktop Sidebar */}
-        <aside className="sidebar desktop-only">
+        {/* Desktop Sidebar - Hidden */}
+        <aside className="sidebar desktop-only" style={{ display: 'none' }}>
           <div className="sidebar-header">
             <div className="sidebar-avatar">{user.avatar}</div>
             <div className="sidebar-user-info">

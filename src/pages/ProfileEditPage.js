@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ShareModal from '../components/ShareModal';
 import './ProfileEditPage.css';
 
 function ProfileEditPage({ user, updateUser, addNotification }) {
@@ -12,6 +13,7 @@ function ProfileEditPage({ user, updateUser, addNotification }) {
     avatar: user.avatar
   });
   const [errors, setErrors] = useState({});
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const avatarOptions = ['👤', '👨', '👩', '🧑', '👦', '👧', '🎮', '🎯', '⚡', '🔥', '💎', '⭐', '🏆', '👑', '🚀', '💰'];
 
@@ -164,6 +166,18 @@ function ProfileEditPage({ user, updateUser, addNotification }) {
           </div>
         </form>
 
+        {/* Share Button */}
+        <div className="share-section">
+          <button 
+            type="button" 
+            onClick={() => setShowShareModal(true)} 
+            className="share-profile-btn"
+          >
+            <span>🎉</span>
+            <span>Share My Achievement</span>
+          </button>
+        </div>
+
         {/* Account Stats */}
         <div className="account-stats">
           <h3>Account Statistics</h3>
@@ -187,6 +201,14 @@ function ProfileEditPage({ user, updateUser, addNotification }) {
           </div>
         </div>
       </div>
+
+      {showShareModal && (
+        <ShareModal 
+          user={user} 
+          onClose={() => setShowShareModal(false)}
+          type="achievement"
+        />
+      )}
     </div>
   );
 }

@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import Achievements from '../components/Achievements';
+import PuzzleGame from '../games/PuzzleGame';
+import SpinWheelGame from '../games/SpinWheelGame';
+import MemoryGame from '../games/MemoryGame';
 import './GamePage.css';
 
 function GamePage({ user, updateUser, addNotification }) {
   const [mining, setMining] = useState({});
   const [cooldowns, setCooldowns] = useState({});
+  const [dailyPlays, setDailyPlays] = useState({});
+  const [activeGame, setActiveGame] = useState(null);
 
   const miningModes = [
-    { id: 'puzzle', name: 'Puzzle Mining', icon: '🧩', reward: 50, duration: 2000, cooldown: 30000, expReward: 10 },
-    { id: 'spin', name: 'Spin Mining', icon: '🎰', reward: 100, duration: 3000, cooldown: 60000, expReward: 20 },
-    { id: 'sticker', name: 'Sticker Packs', icon: '🎨', reward: 75, duration: 2500, cooldown: 45000, expReward: 15 },
-    { id: 'video', name: 'Video Mining', icon: '📹', reward: 30, duration: 1500, cooldown: 20000, expReward: 5 },
-    { id: 'mini', name: 'Mini-Game', icon: '🎯', reward: 120, duration: 4000, cooldown: 90000, expReward: 25 }
+    { id: 'puzzle', name: 'Puzzle Challenge', icon: '🧩', reward: 50, duration: 2000, cooldown: 30000, expReward: 10, hasGame: true, gameType: 'puzzle' },
+    { id: 'spin', name: 'Spin Wheel', icon: '🎰', reward: 100, duration: 3000, cooldown: 60000, expReward: 20, hasGame: true, gameType: 'spin' },
+    { id: 'memory', name: 'Memory Match', icon: '🧠', reward: 120, duration: 2500, cooldown: 45000, expReward: 25, hasGame: true, gameType: 'memory' },
+    { id: 'video', name: 'Video Mining', icon: '📹', reward: 30, duration: 1500, cooldown: 20000, expReward: 5, hasGame: false },
+    { id: 'sticker', name: 'Sticker Packs', icon: '🎨', reward: 75, duration: 4000, cooldown: 90000, expReward: 15, hasGame: false }
   ];
+
+  const MAX_DAILY_PLAYS = 2;
 
   useEffect(() => {
     // Load cooldowns from localStorage
@@ -30,7 +37,14 @@ function GamePage({ user, updateUser, addNotification }) {
       
       setCooldowns(activeCooldowns);
     }
-  }, []);
+
+    // Load daily plays
+    const today = new Date().toDateString();
+    const savedDailyPlays = localStorage.getItem(`dailyPlays_${user.userId}_${today}`);
+    if (savedDailyPlays) {
+      setDailyPlays(JSON.parse(savedDailyPlays));
+    }
+  }, [user.userId]);
 
   useEffect(() => {
     // Save cooldowns to localStorage
@@ -55,36 +69,67 @@ function GamePage({ user, updateUser, addNotification }) {
   }, [cooldowns]);
 
   const startMining = (mode) => {
+    const today = new Date().toDateString();
+    const todayPlays = dailyPlays[mode.id] || 0;
+    
     if (mining[mode.id] || cooldowns[mode.id]) return;
+    
+    if (todayPlays >= MAX_DAILY_PLAYS) {
+      addNotification(`Daily limit reached! You can play ${mode.name} ${MAX_DAILY_PLAYS} times per day.`, 'error');
+      return;
+    }
+
+    if (mode.hasGame) {
+      setActiveGame(mode.gameType);
+      return;
+    }
 
     setMining({ ...mining, [mode.id]: true });
     addNotification(`Started ${mode.name}!`, 'info');
 
     setTimeout(() => {
-      const newPoints = user.points + mode.reward;
-      const newExp = user.exp + mode.expReward;
-      const newCompletedTasks = user.completedTasks + 1;
-      
-      // Check for level up
-      let newLevel = user.vipLevel;
-      let finalExp = newExp;
-      if (newExp >= user.maxExp) {
-        newLevel = user.vipLevel + 1;
-        finalExp = newExp - user.maxExp;
-        addNotification(`🎉 Level Up! You are now VIP Level ${newLevel}!`, 'success');
-      }
-
-      updateUser({
-        points: newPoints,
-        exp: finalExp,
-        vipLevel: newLevel,
-        completedTasks: newCompletedTasks
-      });
-
-      setMining({ ...mining, [mode.id]: false });
-      setCooldowns({ ...cooldowns, [mode.id]: Date.now() + mode.cooldown });
-      addNotification(`+${mode.reward} points earned!`, 'success');
+      completeMining(mode, mode.reward);
     }, mode.duration);
+  };
+
+  const completeMining = (mode, earnedPoints) => {
+    const newPoints = user.points + earnedPoints;
+    const newExp = user.exp + mode.expReward;
+    const newCompletedTasks = user.completedTasks + 1;
+    
+    // Check for level up
+    let newLevel = user.vipLevel;
+    let finalExp = newExp;
+    if (newExp >= user.maxExp) {
+      newLevel = user.vipLevel + 1;
+      finalExp = newExp - user.maxExp;
+      addNotification(`🎉 Level Up! You are now VIP Level ${newLevel}!`, 'success');
+    }
+
+    updateUser({
+      points: newPoints,
+      exp: finalExp,
+      vipLevel: newLevel,
+      completedTasks: newCompletedTasks
+    });
+
+    // Update daily plays
+    const today = new Date().toDateString();
+    const newDailyPlays = { ...dailyPlays, [mode.id]: (dailyPlays[mode.id] || 0) + 1 };
+    setDailyPlays(newDailyPlays);
+    localStorage.setItem(`dailyPlays_${user.userId}_${today}`, JSON.stringify(newDailyPlays));
+
+    setMining({ ...mining, [mode.id]: false });
+    setCooldowns({ ...cooldowns, [mode.id]: Date.now() + mode.cooldown });
+    addNotification(`+${earnedPoints} points earned!`, 'success');
+  };
+
+  const handleGameComplete = (won, points) => {
+    const mode = miningModes.find(m => m.gameType === activeGame);
+    if (mode) {
+      completeMining(mode, points);
+    }
+    setActiveGame(null);
   };
 
   const getCooldownTime = (modeId) => {
@@ -97,7 +142,7 @@ function GamePage({ user, updateUser, addNotification }) {
     <div className="game-page">
       <div className="page-header">
         <h1 className="page-title">Game Mining</h1>
-        <p className="page-subtitle">Start mining to earn points and rewards</p>
+        <p className="page-subtitle">Play games to earn points and rewards</p>
       </div>
 
       <div className="stats-grid">
@@ -111,7 +156,7 @@ function GamePage({ user, updateUser, addNotification }) {
         <div className="stat-card">
           <div className="stat-icon">🎯</div>
           <div className="stat-info">
-            <div className="stat-value">24</div>
+            <div className="stat-value">{user.completedTasks}</div>
             <div className="stat-label">Completed Tasks</div>
           </div>
         </div>
@@ -137,21 +182,29 @@ function GamePage({ user, updateUser, addNotification }) {
           const cooldownTime = getCooldownTime(mode.id);
           const isOnCooldown = cooldownTime !== null;
           const isMining = mining[mode.id];
+          const todayPlays = dailyPlays[mode.id] || 0;
+          const playsLeft = MAX_DAILY_PLAYS - todayPlays;
           
           return (
-            <div key={mode.id} className={`mining-card ${isOnCooldown ? 'cooldown' : ''}`}>
+            <div key={mode.id} className={`mining-card ${isOnCooldown ? 'cooldown' : ''} ${playsLeft === 0 ? 'daily-limit' : ''}`}>
               <div className="mining-icon">{mode.icon}</div>
               <h4>{mode.name}</h4>
               <div className="mining-rewards">
                 <p className="reward">+{mode.reward} pts</p>
                 <p className="exp-reward">+{mode.expReward} exp</p>
               </div>
+              <div className="daily-plays">
+                <span>Plays left today: {playsLeft}</span>
+              </div>
               <button 
                 className="start-btn"
                 onClick={() => startMining(mode)}
-                disabled={isMining || isOnCooldown}
+                disabled={isMining || isOnCooldown || playsLeft === 0}
               >
-                {isMining ? 'Mining...' : isOnCooldown ? `${cooldownTime}s` : 'Start'}
+                {isMining ? 'Mining...' : 
+                 isOnCooldown ? `${cooldownTime}s` : 
+                 playsLeft === 0 ? 'Daily Limit' : 
+                 mode.hasGame ? 'Play Game' : 'Start'}
               </button>
               {isMining && (
                 <div className="progress-bar">
@@ -169,6 +222,27 @@ function GamePage({ user, updateUser, addNotification }) {
       </div>
 
       <Achievements user={user} />
+
+      {activeGame === 'puzzle' && (
+        <PuzzleGame 
+          onComplete={handleGameComplete}
+          onClose={() => setActiveGame(null)}
+        />
+      )}
+
+      {activeGame === 'spin' && (
+        <SpinWheelGame 
+          onComplete={handleGameComplete}
+          onClose={() => setActiveGame(null)}
+        />
+      )}
+
+      {activeGame === 'memory' && (
+        <MemoryGame 
+          onComplete={handleGameComplete}
+          onClose={() => setActiveGame(null)}
+        />
+      )}
     </div>
   );
 }

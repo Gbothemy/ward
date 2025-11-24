@@ -209,3 +209,34 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Share Section */
+.share-section {
+  margin-top: 20px;
+}
+
+.share-profile-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.share-profile-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.share-profile-btn span:first-child {
+  font-size: 24px;
+}

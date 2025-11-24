@@ -15,6 +15,7 @@ import './App.css';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authUser, setAuthUser] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
   const [user, setUser] = useState({
     username: 'Player123',
     userId: 'USR-98765',
@@ -41,6 +42,27 @@ function App() {
   });
 
   const [notifications, setNotifications] = useState([]);
+
+  // Load dark mode preference
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode');
+    if (savedDarkMode === 'true') {
+      setDarkMode(true);
+      document.body.classList.add('dark-mode');
+    }
+  }, []);
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem('darkMode', newMode.toString());
+    if (newMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  };
 
   // Check authentication on mount and restore session
   useEffect(() => {
@@ -143,7 +165,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       ) : (
-        <Layout user={user} notifications={notifications} onLogout={handleLogout}>
+        <Layout user={user} notifications={notifications} onLogout={handleLogout} darkMode={darkMode} toggleDarkMode={toggleDarkMode}>
           <Routes>
             <Route path="/" element={<GamePage user={user} updateUser={updateUser} addNotification={addNotification} />} />
             <Route path="/game" element={<GamePage user={user} updateUser={updateUser} addNotification={addNotification} />} />
