@@ -180,19 +180,23 @@ function Layout({ children, user, notifications = [], onLogout }) {
       <nav className="bottom-nav mobile-only">
         <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
           <span className="nav-icon">🎮</span>
-          <span className="nav-label">GAME</span>
+          <span className="nav-label">MINING</span>
         </Link>
         <Link to="/airdrop" className={location.pathname === '/airdrop' ? 'active' : ''}>
           <span className="nav-icon">🎁</span>
-          <span className="nav-label">AIRDROP</span>
+          <span className="nav-label">REWARDS</span>
         </Link>
-        <Link to="/referral" className={location.pathname === '/referral' ? 'active' : ''}>
-          <span className="nav-icon">💰</span>
-          <span className="nav-label">REFERRAL</span>
+        <Link to="/conversion" className={location.pathname === '/conversion' ? 'active' : ''}>
+          <span className="nav-icon">💳</span>
+          <span className="nav-label">FINANCE</span>
+        </Link>
+        <Link to="/leaderboard" className={location.pathname === '/leaderboard' ? 'active' : ''}>
+          <span className="nav-icon">🏆</span>
+          <span className="nav-label">COMMUNITY</span>
         </Link>
         <Link to="/benefit" className={location.pathname === '/benefit' ? 'active' : ''}>
           <span className="nav-icon">👤</span>
-          <span className="nav-label">BENEFIT</span>
+          <span className="nav-label">ACCOUNT</span>
         </Link>
       </nav>
     </div>
