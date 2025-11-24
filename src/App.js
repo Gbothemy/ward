@@ -9,6 +9,7 @@ import ReferralPage from './pages/ReferralPage';
 import BenefitPage from './pages/BenefitPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ProfileEditPage from './pages/ProfileEditPage';
+import ConversionPage from './pages/ConversionPage';
 import './App.css';
 
 function App() {
@@ -41,10 +42,32 @@ function App() {
 
   const [notifications, setNotifications] = useState([]);
 
-  // Check authentication on mount (but don't auto-login)
+  // Check authentication on mount and restore session
   useEffect(() => {
-    // Only check auth if user is trying to access protected routes
-    // Landing page should always be accessible
+    const savedAuthUser = localStorage.getItem('authUser');
+    if (savedAuthUser) {
+      try {
+        const parsedAuthUser = JSON.parse(savedAuthUser);
+        setAuthUser(parsedAuthUser);
+        setIsAuthenticated(true);
+        
+        // Load user game data
+        const savedUser = localStorage.getItem(`rewardGameUser_${parsedAuthUser.userId}`);
+        if (savedUser) {
+          const parsedUser = JSON.parse(savedUser);
+          setUser({
+            ...parsedUser,
+            username: parsedAuthUser.username,
+            userId: parsedAuthUser.userId,
+            avatar: parsedAuthUser.avatar,
+            email: parsedAuthUser.email
+          });
+        }
+      } catch (error) {
+        console.error('Error restoring session:', error);
+        localStorage.removeItem('authUser');
+      }
+    }
   }, []);
 
   // Save user data to localStorage whenever it changes (per user)
@@ -129,6 +152,7 @@ function App() {
             <Route path="/benefit" element={<BenefitPage user={user} updateUser={updateUser} addNotification={addNotification} onLogout={handleLogout} />} />
             <Route path="/leaderboard" element={<LeaderboardPage user={user} />} />
             <Route path="/profile/edit" element={<ProfileEditPage user={user} updateUser={updateUser} addNotification={addNotification} />} />
+            <Route path="/conversion" element={<ConversionPage user={user} updateUser={updateUser} addNotification={addNotification} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Layout>

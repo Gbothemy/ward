@@ -68,6 +68,10 @@ function Layout({ children, user, notifications = [], onLogout }) {
               <span className="nav-icon">🏆</span>
               <span className="nav-text">Leaderboard</span>
             </Link>
+            <Link to="/conversion" className={location.pathname === '/conversion' ? 'active' : ''}>
+              <span className="nav-icon">🔄</span>
+              <span className="nav-text">Convert & Withdraw</span>
+            </Link>
             <div className="nav-divider"></div>
             <Link to="/" className="nav-secondary">
               <span className="nav-icon">🧩</span>
@@ -114,6 +118,7 @@ function Layout({ children, user, notifications = [], onLogout }) {
                 <Link to="/airdrop" onClick={() => setMenuOpen(false)}>🎁 Airdrop</Link>
                 <Link to="/referral" onClick={() => setMenuOpen(false)}>💰 Referral</Link>
                 <Link to="/benefit" onClick={() => setMenuOpen(false)}>👤 Benefit</Link>
+                <Link to="/conversion" onClick={() => setMenuOpen(false)}>🔄 Convert & Withdraw</Link>
                 <div className="nav-divider"></div>
                 <Link to="/" onClick={() => setMenuOpen(false)}>🧩 Puzzle Mining</Link>
                 <Link to="/" onClick={() => setMenuOpen(false)}>📹 Video Mining</Link>
