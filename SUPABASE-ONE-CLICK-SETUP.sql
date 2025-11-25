@@ -1,6 +1,5 @@
--- Reward Game Dashboard - Supabase Schema
--- Run this in Supabase SQL Editor
--- Safe version - creates tables only if they don't exist
+-- ✅ SAFE ONE-CLICK SUPABASE SETUP
+-- Copy and paste this entire file into Supabase SQL Editor and click RUN
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
@@ -76,7 +75,7 @@ CREATE TABLE IF NOT EXISTS referrals (
   UNIQUE(referred_id)
 );
 
--- Create indexes for better performance
+-- Create indexes
 CREATE INDEX IF NOT EXISTS idx_users_user_id ON users(user_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_points ON users(points DESC);
@@ -85,7 +84,7 @@ CREATE INDEX IF NOT EXISTS idx_withdrawals_user_id ON withdrawal_requests(user_i
 CREATE INDEX IF NOT EXISTS idx_withdrawals_status ON withdrawal_requests(status);
 CREATE INDEX IF NOT EXISTS idx_game_plays_user_date ON game_plays(user_id, play_date);
 
--- Enable Row Level Security (RLS)
+-- Enable Row Level Security
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE balances ENABLE ROW LEVEL SECURITY;
 ALTER TABLE withdrawal_requests ENABLE ROW LEVEL SECURITY;
@@ -93,15 +92,35 @@ ALTER TABLE game_plays ENABLE ROW LEVEL SECURITY;
 ALTER TABLE achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
 
--- Create policies (allow all operations for now)
-CREATE POLICY "Allow all operations on users" ON users FOR ALL USING (true);
-CREATE POLICY "Allow all operations on balances" ON balances FOR ALL USING (true);
-CREATE POLICY "Allow all operations on withdrawal_requests" ON withdrawal_requests FOR ALL USING (true);
-CREATE POLICY "Allow all operations on game_plays" ON game_plays FOR ALL USING (true);
-CREATE POLICY "Allow all operations on achievements" ON achievements FOR ALL USING (true);
-CREATE POLICY "Allow all operations on referrals" ON referrals FOR ALL USING (true);
+-- Create policies (allow all for development)
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'users' AND policyname = 'Allow all operations on users') THEN
+    CREATE POLICY "Allow all operations on users" ON users FOR ALL USING (true);
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'balances' AND policyname = 'Allow all operations on balances') THEN
+    CREATE POLICY "Allow all operations on balances" ON balances FOR ALL USING (true);
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'withdrawal_requests' AND policyname = 'Allow all operations on withdrawal_requests') THEN
+    CREATE POLICY "Allow all operations on withdrawal_requests" ON withdrawal_requests FOR ALL USING (true);
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'game_plays' AND policyname = 'Allow all operations on game_plays') THEN
+    CREATE POLICY "Allow all operations on game_plays" ON game_plays FOR ALL USING (true);
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'achievements' AND policyname = 'Allow all operations on achievements') THEN
+    CREATE POLICY "Allow all operations on achievements" ON achievements FOR ALL USING (true);
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'referrals' AND policyname = 'Allow all operations on referrals') THEN
+    CREATE POLICY "Allow all operations on referrals" ON referrals FOR ALL USING (true);
+  END IF;
+END $$;
 
--- Create function to update updated_at timestamp
+-- Create update function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -110,12 +129,14 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Create triggers for updated_at
+-- Create triggers
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_balances_updated_at ON balances;
 CREATE TRIGGER update_balances_updated_at BEFORE UPDATE ON balances
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Success message
-SELECT 'Database schema created successfully! All tables are ready.' AS message;
+SELECT '✅ Database setup complete! All tables created successfully.' AS status;
