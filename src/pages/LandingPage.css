@@ -49,6 +49,7 @@
 .nav-buttons {
   display: flex;
   gap: 12px;
+  align-items: center;
 }
 
 .nav-btn {
@@ -59,6 +60,20 @@
   transition: all 0.3s ease;
   font-size: 15px;
   border: 2px solid transparent;
+}
+
+.admin-btn {
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: white;
+  font-size: 20px;
+  border: none;
+  box-shadow: 0 4px 15px rgba(26, 26, 46, 0.3);
+}
+
+.admin-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(26, 26, 46, 0.5);
 }
 
 .login-btn {
