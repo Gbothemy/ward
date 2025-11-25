@@ -7,6 +7,7 @@
     "build": "webpack --mode production"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.84.0",
     "@vercel/postgres": "^0.10.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
