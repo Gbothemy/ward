@@ -152,7 +152,7 @@ function App() {
   };
 
   return (
-    <Router>
+    <Router basename={process.env.NODE_ENV === 'production' ? '/crypto-earning' : '/'}>
       {!isAuthenticated ? (
         <Routes>
           <Route path="/" element={<LandingPage />} />
