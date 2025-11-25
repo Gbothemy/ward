@@ -1,10 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase configuration
-// For now, using a demo/public Supabase instance
-// You should replace these with your own Supabase project credentials
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://your-project.supabase.co';
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'your-anon-key';
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://ppeucykbvevlfzfwsgyn.supabase.co';
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwZXVjeWtidmV2bGZ6ZndzZ3luIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMjQyOTgsImV4cCI6MjA3OTYwMDI5OH0.yaIs6RjKr6FY0EBFM72y6xXAhDc-H_JMgenPPtLHZpg';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
